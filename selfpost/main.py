@@ -104,12 +104,9 @@ def find_channel(user_data: Dict[str, Any], chat_id: int) -> Optional[Dict[str, 
 
 
 async def generate_post_text(topic: str) -> str:
-    prompt = (
-        "Ты контент-редактор Telegram-канала. Напиши один готовый пост на русском языке. "
-        "Пиши понятно и живо, без хештегов-спама и лишней воды. "
-        f"Тема поста: {topic}"
-    )
-    return await asyncio.to_thread(aireq, prompt)
+    clean_topic = topic.strip() if topic else "без темы"
+    prompt = f"Напиши пост для Telegram-канала на тему: {clean_topic}, без хэштегов и лишних символов, без инструкций просто текст поста. и не надо добавлять *** везде в начале темы "
+    return (await asyncio.to_thread(aireq, prompt)).strip()
 
 
 async def send_draft_to_admin(user_id: int, channel: Dict[str, Any], generated_text: str) -> None:
