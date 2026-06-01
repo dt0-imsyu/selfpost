@@ -1,6 +1,6 @@
 import asyncio
+import contextlib
 import json
-import os
 import time
 import uuid
 from typing import Any, Dict, Optional
@@ -11,10 +11,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from apikeys import botkey
+from config import BOT_TOKEN, DATA_FILE
 from geminiapp import aireq
-
-DATA_FILE = "bot_data.json"
 
 
 class BotStates(StatesGroup):
@@ -25,15 +23,15 @@ class BotStates(StatesGroup):
     wait_image = State()
 
 
-bot = Bot(token=botkey)
+bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 scheduler_task: Optional[asyncio.Task] = None
 
 
 def load_data() -> Dict[str, Any]:
-    if not os.path.exists(DATA_FILE):
+    if not DATA_FILE.exists():
         return {"users": {}}
-    with open(DATA_FILE, "r", encoding="utf-8") as file:
+    with DATA_FILE.open("r", encoding="utf-8") as file:
         try:
             data = json.load(file)
         except json.JSONDecodeError:
@@ -44,8 +42,11 @@ def load_data() -> Dict[str, Any]:
 
 
 def save_data(data: Dict[str, Any]) -> None:
-    with open(DATA_FILE, "w", encoding="utf-8") as file:
+    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+    temp_file = DATA_FILE.with_suffix(f"{DATA_FILE.suffix}.tmp")
+    with temp_file.open("w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
+    temp_file.replace(DATA_FILE)
 
 
 def get_or_create_user_data(data: Dict[str, Any], user_id: int) -> Dict[str, Any]:
@@ -104,8 +105,15 @@ def find_channel(user_data: Dict[str, Any], chat_id: int) -> Optional[Dict[str, 
 
 
 async def generate_post_text(topic: str) -> str:
-    clean_topic = topic.strip() if topic else "без темы"
-    prompt = f"Напиши пост для Telegram-канала на тему: {clean_topic}, без хэштегов и лишних символов, без инструкций просто текст поста. и не надо добавлять *** везде в начале темы "
+    clean_topic = topic.strip() if topic else "полезные новости и советы"
+    prompt = (
+        "Ты контент-редактор Telegram-канала. Напиши один готовый пост на русском языке "
+        "для публикации.\n"
+        "Требования: 700-1200 символов, живой тон, 2-4 коротких абзаца, без хэштегов, "
+        "без Markdown-разметки, без заголовков вида 'Тема:' и без пересказа инструкции. "
+        "В конце добавь мягкий призыв к действию.\n\n"
+        f"Тема поста: {clean_topic}"
+    )
     return (await asyncio.to_thread(aireq, prompt)).strip()
 
 
@@ -430,8 +438,10 @@ async def draft_publish_handler(callback: types.CallbackQuery) -> None:
             await bot.send_photo(
                 chat_id=draft["channel_id"],
                 photo=draft["image_file_id"],
-                caption=draft["text"],
+                caption=draft["text"] if len(draft["text"]) <= 1024 else None,
             )
+            if len(draft["text"]) > 1024:
+                await bot.send_message(chat_id=draft["channel_id"], text=draft["text"])
         else:
             await bot.send_message(chat_id=draft["channel_id"], text=draft["text"])
     except Exception as err:
@@ -495,9 +505,9 @@ async def image_upload_handler(message: types.Message, state: FSMContext) -> Non
 
 async def main() -> None:
     global scheduler_task
-    print("пред. ком. очищены")
+    print("Previous updates cleared")
     await bot.delete_webhook(drop_pending_updates=True)
-    print("бот запускается")
+    print("Selfpost bot is starting")
     scheduler_task = asyncio.create_task(scheduler_loop())
     try:
         await dp.start_polling(bot)
@@ -509,6 +519,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    import contextlib
-
     asyncio.run(main())

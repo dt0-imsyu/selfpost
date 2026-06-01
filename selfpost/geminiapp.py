@@ -1,23 +1,16 @@
-import os
 from google import genai
-from apikeys import geminikey
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", geminikey).strip()
-if not GEMINI_API_KEY:
-    raise RuntimeError("GEMINI_API_KEY не задан. Укажите ключ Gemini в apikeys.py")
+from config import GEMINI_API_KEY, GEMINI_MODEL
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-MODEL_NAME = "gemini-2.5-flash-lite"
-print(f"[LLM/Gemini] client initialized. model={MODEL_NAME}")
+print(f"[LLM/Gemini] client initialized. model={GEMINI_MODEL}")
 
 
-def aireq(req):
-    req = str(req)
+def aireq(req: str) -> str:
     response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=req,
+        model=GEMINI_MODEL,
+        contents=str(req),
     )
     text = response.text or ""
-    print(f"[LLM/Gemini] model used: {MODEL_NAME}")
     return text.strip()

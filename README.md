@@ -1,26 +1,39 @@
 # Selfpost
 
-Selfpost — Telegram-бот для автоматизации контент-плана канала. Он подключается к каналу, по расписанию генерирует черновик поста через Gemini и присылает его администратору в личные сообщения. Администратор может опубликовать текст сразу, добавить изображение или пропустить черновик.
+**Selfpost** is a Telegram bot that helps channel owners keep a steady posting rhythm. It generates post drafts with Gemini, sends them to the admin for review, and publishes only after manual approval.
 
-## Возможности
+**Selfpost** - Telegram-бот для ведения канала по расписанию. Он генерирует черновики постов через Gemini, присылает их администратору в личные сообщения и публикует только после подтверждения.
 
-- подключение нескольких Telegram-каналов;
-- проверка, что бот добавлен в канал администратором;
-- генерация постов под заданную тему канала;
-- ручной запуск генерации в любой момент;
-- настройка интервала автогенерации для каждого канала;
-- черновики с подтверждением перед публикацией;
-- добавление изображения к черновику;
-- локальное хранение настроек каналов и ожидающих публикаций.
+---
 
-## Стек
+## Русская версия
 
-- Python 3.11+;
-- aiogram 3;
-- Google Gemini API;
-- python-dotenv.
+### Что умеет бот
 
-## Быстрый старт
+- подключает один или несколько Telegram-каналов;
+- проверяет, что бот добавлен в канал администратором;
+- хранит тему и интервал публикаций для каждого канала;
+- по расписанию генерирует черновик поста через Gemini;
+- позволяет сгенерировать пост вручную в любой момент;
+- отправляет черновик администратору в личку;
+- дает выбор: опубликовать, добавить изображение или пропустить;
+- публикует пост в канал только после подтверждения.
+
+### Зачем это нужно
+
+Selfpost закрывает простую, но частую проблему: канал нужно вести регулярно, а идеи и время есть не всегда. Бот не публикует контент самовольно, а работает как ассистент: готовит черновик, напоминает о публикации и оставляет финальное решение за человеком.
+
+Проект показывает работу с асинхронным Telegram-ботом, FSM-сценариями, интеграцией LLM, простым планировщиком задач и хранением состояния без отдельной базы данных.
+
+### Стек
+
+- Python 3.11+
+- aiogram 3
+- Google Gemini API
+- python-dotenv
+- JSON-файл для локального хранения данных
+
+### Быстрый старт
 
 ```bash
 python -m venv .venv
@@ -44,29 +57,83 @@ SELFPOST_DATA_FILE=bot_data.json
 python selfpost/main.py
 ```
 
-## Как пользоваться
+### Как пользоваться
 
-1. Создайте Telegram-бота через BotFather и добавьте токен в `.env`.
-2. Получите ключ Gemini API и добавьте его в `.env`.
-3. Добавьте бота администратором в нужный канал.
-4. Напишите боту `/start`.
-5. Подключите канал по `@username` или `chat_id`.
-6. Задайте тему и интервал генерации.
+1. Создайте Telegram-бота через BotFather.
+2. Получите ключ Gemini API.
+3. Добавьте оба ключа в `.env`.
+4. Добавьте бота администратором в Telegram-канал.
+5. Напишите боту `/start`.
+6. Подключите канал по `@username` или `chat_id`.
+7. Укажите тему канала и интервал генерации.
 
-## Безопасность
+### Безопасность
 
-Секреты не должны храниться в репозитории. Используйте `.env`, а файл `.env.example` оставляйте только как шаблон. Если токен Telegram или Gemini когда-либо попал в публичный репозиторий, его нужно перевыпустить.
+Секреты не должны лежать в коде или попадать в Git. Для токенов используется `.env`, а `.env.example` служит только шаблоном. Если реальный Telegram-токен или Gemini API key когда-либо был опубликован, его нужно перевыпустить.
 
-## Статус проекта
+---
 
-Проект подходит для портфолио как пример Telegram-бота с асинхронной логикой, FSM-сценариями, интеграцией LLM и простым планировщиком публикаций.
-=======
-RU:
-Selfpost - бот в телеграм, который ведет за вас тг канал.
-Он подключается в тг канал и напоминает вам раз в определенное время опубликовать пост.Бот сам генерирует пост на заданную тему канала и присылает вам в ЛС.В черновик можно добавить фото, а также администратор решает публиковать пост или нет(бот сам опубликует пост, администратору надо нажать всего 1 кнопку). Это облегчает ведение тг канала, позволяя делать посты за 1 минуту и строго по графику.
-В боте использованы api aiogram 3.0 для написания тг бота, api gemini.
------------------------------------
-ENG:
-Selfpost is a Telegram bot that manages your Telegram channel for you.
-It connects to your Telegram channel and reminds you to publish a post at a specific time. The bot automatically generates a post on a given channel topic and sends it to you via private messages. You can add a photo to the draft, and the administrator decides whether to publish the post (the bot will publish the post automatically; the administrator only needs to click one button). This simplifies managing your Telegram channel, allowing you to post in as little as one minute and strictly according to the schedule.
-The bot uses the Aiogram 3.0 API for writing the Telegram bot and the Gemini API.
+## English Version
+
+### Features
+
+- connects one or multiple Telegram channels;
+- checks that the bot has admin rights in the channel;
+- stores a topic and posting interval for each channel;
+- generates scheduled post drafts with Gemini;
+- supports manual post generation on demand;
+- sends each draft to the admin in private messages;
+- lets the admin publish, attach an image, or skip the draft;
+- publishes only after explicit admin approval.
+
+### Why This Project Exists
+
+Selfpost solves a practical content workflow problem: Telegram channels need consistent posting, but writing ideas from scratch every day is time-consuming. The bot acts as an assistant, not an autopublisher. It prepares a draft, reminds the admin, and keeps the final decision human.
+
+As a portfolio project, it demonstrates an async Telegram bot, aiogram FSM flows, LLM integration, lightweight scheduling, and local JSON-based persistence.
+
+### Tech Stack
+
+- Python 3.11+
+- aiogram 3
+- Google Gemini API
+- python-dotenv
+- JSON-based local storage
+
+### Quick Start
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+```
+
+Fill in `.env`:
+
+```env
+BOT_TOKEN=telegram-bot-token
+GEMINI_API_KEY=gemini-api-key
+GEMINI_MODEL=gemini-2.5-flash-lite
+SELFPOST_DATA_FILE=bot_data.json
+```
+
+Run the bot:
+
+```bash
+python selfpost/main.py
+```
+
+### Usage
+
+1. Create a Telegram bot with BotFather.
+2. Create a Gemini API key.
+3. Put both secrets into `.env`.
+4. Add the bot as an admin to your Telegram channel.
+5. Send `/start` to the bot.
+6. Connect the channel using `@username` or `chat_id`.
+7. Set the channel topic and generation interval.
+
+### Security
+
+Secrets must not be stored in code or committed to Git. Runtime credentials are loaded from `.env`, while `.env.example` is only a template. If a real Telegram token or Gemini API key was ever published, rotate it immediately.
