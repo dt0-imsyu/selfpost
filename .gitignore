@@ -2,23 +2,7 @@
 __pycache__/
 *.pyc
 .venv/
-env/
-
-# Runtime data
-bot_data.json
-
-# Secrets
-selfpost/apikeys.py
-.env
-
-# IDE
-.vscode/
-
-
-# Python
-__pycache__/
-*.pyc
-.venv/
+venv/
 env/
 
 # Runtime data
